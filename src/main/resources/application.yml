@@ -1,0 +1,37 @@
+mybatis:
+  mapper-locations: classpath:mybatis/*Mapper.xml
+
+spring:
+  shardingsphere:
+    datasource:
+      names:  ds0,ds1
+      ds0:
+        driver-class-name: com.mysql.cj.jdbc.Driver
+        jdbc-url: jdbc:mysql://localhost:3306/db_order_01?useUnicode=true&characterEncoding=UTF-8&useSSL=true&serverTimezone=GMT%2B8
+        username: root
+        password: yefan@813
+      ds1:
+        driver-class-name: com.mysql.cj.jdbc.Driver
+        jdbc-url: jdbc:mysql://localhost:3306/db_order_02?useUnicode=true&characterEncoding=UTF-8&useSSL=true&serverTimezone=GMT%2B8
+        username: root
+        password: yefan@813
+    sharding:
+      default-database-strategy:
+        inline:
+          sharding-column: user_id
+          algorithm-expression: ds$->{user_id % 2}
+      tables:
+        t_order:
+          actual-data-nodes:  ds$->{0..1}.t_order_$->{0..1}
+          table-strategy:
+            inline:
+              sharding-column:  order_id
+              algorithm-expression: t_order_$->{order_id % 2}
+          key-generator:
+            column: order_id
+            type: SNOWFLAKE
+            props:
+              worker:
+                id: 123
+              sql:
+                show: true
